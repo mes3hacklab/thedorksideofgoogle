@@ -1,0 +1,240 @@
+#!/usr/bin/php
+<?php
+/*
+* DorkSide of GOOGLE
+* Copyright (C) 2014 by mes3hacklab
+*
+* DorkSide of GOOGLE is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 3 of the License, or
+* (at your option) any later version.
+*
+* This source code is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this source code; if not, write to the Free Software
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+*/
+
+$lst = file('dork.conf') OR die("Dork file error\n");
+$src=array();
+$ph=0;
+$idx = 0;
+$idc = 0;
+$shl=array();
+foreach($lst as $num => $li) {
+	list($li)=explode('#',$li,2);
+	$li=trim($li,"\r\n");
+	$li=str_replace("\t",' ',$li);
+	$x=trim($li,' ');
+	if ($x!='' && $x[0]=='@') {
+		$x=str_replace('-','',$x);
+		$x=substr($x,1);
+		$idx = $x.'-'.$idc;
+		$shl[$x]=true;
+	        continue;
+		}
+		
+	if ($x=='' && $ph==1) {
+	        $ph=0;
+	        $src[$idx] = array(
+	        	'a'	=>	$cur	,
+	        	'b'	=>	$tmp	,
+			'c'	=>	$tmp2	)
+			;
+		$idc++;
+		$idx=$idc;			
+		continue;
+		}
+	
+	if ($li!='' AND $li[0]==' ') {
+		if ($ph==0) die("Line: ".($num+1)." Error!\n");
+		$y=trim($li,' ');
+		if ($y[0]=='&') $tmp2[] = trim(substr($y,1),' '); else $tmp[] = $y;
+		} else {
+		if ($ph!=0) die("Line: ".($num+1)." Error!\n");
+		$ph=1;
+		$cur = trim($li,' ');
+		$tmp=array();
+		$tmp2=array();
+		}	
+	}
+	
+$tld=array();	
+$lst = file('tld.conf') OR die("TLD file error\n");
+foreach($lst as $num => $li) {
+	$li=trim($li,"\t\r\n ");
+	$li=str_replace("\t",' ',$li);
+	if ($li=='') continue;
+	while(strpos($li,'  ')!==false) $li=str_replace('  ',' ',$li);
+	list($a,$b)=explode(' ',$li,2);
+	$a=strtolower($a);
+	$c=trim($a,'.');
+	if ($a[0]=='.') $a="gov".$a;
+	$tld[$c]=array(
+	        't'	=>	$a	,
+	        's'	=>	$b	)
+		;
+	}
+	
+$par = array(
+	's'		=>	""	,
+	'st'	=>	""	,
+	'n'		=>	1	,
+	'-list-tld'	=>	false,
+	'-list-shell'	=>	false,
+	'-site'	=>	""	,
+	'q'		=>	false	,
+	'h'		=>	false	,
+	'nb'	=>	false	,
+	'nc'	=>	false	,
+	'ng'	=>	false	,
+	'r'		=>	false	,
+	'u'		=>	false	,
+	'sw'	=>	false	)
+	;
+	
+for ($i = 1; $i < $argc; $i++) {
+	$p = $argv[$i];
+	if ($p=='' OR $p[0]!='-') die("Parametro errato $p\n");
+	$p = substr($p,1);
+	if (!isset($par[$p])) die("Parametro errato -$p\n");
+	
+	if (is_bool($par[$p])) {
+		$par[$p]=true;
+		continue;
+		}
+	
+	if (is_numeric($par[$p]) AND is_numeric(@$argv[$i+1])) {
+		$par[$p] = intval($argv[$i+1]);
+		$i++;
+		continue;
+		}
+		
+	if (is_string($par[$p])) {
+	        $par[$p] = $argv[$i+1];
+	        $i++;
+	        continue;
+		}
+		
+	die("Tipo di parametro errato -$p\n");
+	}
+	
+if ($par['q']==false) {
+?>	
+______________________________________________________
+                 ____ __            __    __     __ 
+  __ _  ___ ___ |_  // /  ___ _____/ /__ / /__ _/ / 
+ /  ' \/ -_|_-<_/_ </ _ \/ _ `/ __/  '_// / _ `/ _ \
+/_/_/_/\__/___/____/_//_/\_,_/\__/_/\_\/_/\_,_/_.__/
+______________________________________________________                                                    
+DorkSide of GOOLE 1.0 (C) 2014 mes3hacklab
+
+<?php }
+
+if ($par['h']) {
+?>
+php dork.php [-s <shell>] [-st <tld>] [-n <numero>] [-q] [-h] [-nb]
+		[-nc] [-ng] [-r] [-sw] [--list-tld] [--list-shell]
+		[--site <sito>] [-u]
+		
+	-s <shell>	Specifica la shell da cercare.
+	-st <tld>	Specifica la TLD.
+	--site <sito>	Specifica un sito internet.
+	-n <numero>	Numero di dork da generare.
+	-q		Stampa solo le dork.
+	-h		Questa guida.
+	-ng		Non aggiungere il proefisso gov alle TLD.
+	-sw		Scambia l'ordine delle parole chiave.
+	-r		Imposta tutto a caso.
+	-nb		Rendi le dork più generiche.
+	-nc		Non usare le ricerche secondarie specifiche.
+	--list-tld	Stampa la lista delle TLD.
+	--list-shell	Stampa la lista delle shell.
+	-u		Utilizza inurl invece che site nelle tld.
+
+<?php
+	exit;
+	}	
+	
+if ($par['-list-tld']) {
+	foreach($tld as $k => $v) echo "$k\t{$v['t']}\t{$v['s']}\n";
+	exit;
+	}
+
+if ($par['-list-shell']) {
+	foreach($shl as $k => $v) echo "$k\n";
+	exit;
+	}
+
+if ($par['n']<1) exit;
+
+if ($par['s']!='') {
+	$tmp=array();
+	$par['s']=strtolower($par['s']);
+	foreach($src as $k => $v) {
+	        if (strpos($k,'-')===false) continue;
+	        list($a,$b)=explode('-',$k,2);
+	        if (strtolower($a)==$par['s']) $tmp[$k]=$v;
+		}
+	$src=$tmp;
+	$tmp='';
+	if (count($src)==0) die("Shell senza dork {$par['s']}\n");
+	}
+
+$tmp = array();
+foreach($src as $v) $tmp[] = $v;
+$src=$tmp;
+$tmp='';
+$maxDork = count($src);
+
+$FF= array(
+	'b'	=>	true	,
+	'c'	=>	true	)
+	;
+
+@mt_srand(microtime(true));
+
+$pr0 = $par['u'] ? "site:" : "inurl:" ;
+
+for ($don=0;$don<$par['n'];$don++) {
+	if ($par['st']!='' AND $par['-site']=='') {
+        	if (!isset($tld[$par['st']])) die("TLD Sconosciuta: {$par['st']}\n");
+        	if ($par['ng']) $st=$pr0.$par['st'].' '; else $st=$pr0.$tld[$par['st']]['t'].' ';
+        	} else $st='';
+        
+        if ($par['-site']!='') $st="site:".$par['-site'].' ';
+        
+        if ($maxDork==1) $r=0; else $r=mt_rand(0,$maxDork-1);
+        $cur = $src[$r];
+        $st.=$cur['a'].' ';
+	
+	if ($par['r']) {
+	        $FF['a'] = mt_rand(0,10)>5;
+	        $FF['b'] = mt_rand(0,10)>5;
+	        $par['sw']=true;
+		}
+	
+	foreach(array('b','c') as $i) {
+		if ($par['n'.$i]) continue;
+		if ($FF[$i]==false) continue;
+		
+		$cx = count($cur[$i]);
+		if ($cx>0) {
+			if ($cx==1) $s=0; else $s = mt_rand(0,$cx-1);
+			$st.=$cur[$i][$s].' ';
+			}
+		}				
+	$st=trim($st,' ');
+	if ($par['sw']) {
+	        $st=explode(' ',$st);
+	        shuffle($st);
+	        $st=implode(' ',$st);
+		}
+	echo "$st\n";	       
+	}
+	
+?>

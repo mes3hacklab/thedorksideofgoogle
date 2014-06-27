@@ -1,0 +1,28 @@
+	
+______________________________________________________
+                 ____ __            __    __     __ 
+  __ _  ___ ___ |_  // /  ___ _____/ /__ / /__ _/ / 
+ /  ' \/ -_|_-<_/_ </ _ \/ _ `/ __/  '_// / _ `/ _ \
+/_/_/_/\__/___/____/_//_/\_,_/\__/_/\_\/_/\_,_/_.__/
+______________________________________________________                                                    
+DorkSide of GOOLE 1.0 (C) 2014 mes3hacklab
+
+php dork.php [-s <shell>] [-st <tld>] [-n <numero>] [-q] [-h] [-nb]
+		[-nc] [-ng] [-r] [-sw] [--list-tld] [--list-shell]
+		[--site <sito>] [-u]
+		
+	-s <shell>	Specifica la shell da cercare.
+	-st <tld>	Specifica la TLD.
+	--site <sito>	Specifica un sito internet.
+	-n <numero>	Numero di dork da generare.
+	-q		Stampa solo le dork.
+	-h		Questa guida.
+	-ng		Non aggiungere il proefisso gov alle TLD.
+	-sw		Scambia l'ordine delle parole chiave.
+	-r		Imposta tutto a caso.
+	-nb		Rendi le dork più generiche.
+	-nc		Non usare le ricerche secondarie specifiche.
+	--list-tld	Stampa la lista delle TLD.
+	--list-shell	Stampa la lista delle shell.
+	-u		Utilizza inurl invece che site nelle tld.
+
