@@ -150,7 +150,9 @@ foreach($tmp as $nn => $li) {
 	$li=trim($li,"\t\r\n ");
 	$li=str_replace("\t",' ',$li);
 	while(strpos($li,'  ')!==false) $li=str_replace('  ',' ',$li);
-	list($li,$cm)=@explode('#',$li,2);
+	$li=trim($li,' ');
+	if ($li=='') continue;
+	@list($li,$cm)=explode('#',$li,2);
 	$li=trim($li,' ');
 	if ($li=='') continue;
 	list($a,$b)=explode(' ',$li,2);
@@ -171,7 +173,9 @@ foreach($tmp as $nn => $li) {
 	$li=trim($li,"\t\r\n ");
 	$li=str_replace("\t",' ',$li);
 	while(strpos($li,'  ')!==false) $li=str_replace('  ',' ',$li);
-	list($li,$cm)=@explode('#',$li,2);
+	$li=trim($li,' ');
+	if ($li=='') continue;
+	@list($li,$cm)=explode('#',$li,2);
 	$li=trim($li,' ');
 	if ($li=='') continue;
 	list($a,$b)=explode(' ',$li,2);
