@@ -1,28 +1,99 @@
-	
-______________________________________________________
-                 ____ __            __    __     __ 
-  __ _  ___ ___ |_  // /  ___ _____/ /__ / /__ _/ / 
- /  ' \/ -_|_-<_/_ </ _ \/ _ `/ __/  '_// / _ `/ _ \
-/_/_/_/\__/___/____/_//_/\_,_/\__/_/\_\/_/\_,_/_.__/
-______________________________________________________                                                    
-DorkSide of GOOLE 1.0 (C) 2014 mes3hacklab
+______________________________________________________________
+  _____ _               ___           _      __ _     _      
+ /__   \ |__   ___     /   \___  _ __| | __ / _(_) __| | ___ 
+   / /\/ '_ \ / _ \   / /\ / _ \| '__| |/ / \ \| |/ _` |/ _ \
+  / /  | | | |  __/  / /_// (_) | |  |   <  _\ \ | (_| |  __/
+  \/   |_|_|_|\___| /___,' \___/|_|  |_|\_\ \__/_|\__,_|\___|
+                  ___  / _|   / _ \___   ___   __ _| | ___ 
+                 / _ \| |_   / /_\/ _ \ / _ \ / _` | |/ _ \
+                | (_) |  _| / /_\\ (_) | (_) | (_| | |  __/
+                 \___/|_|   \____/\___/ \___/ \__, |_|\___|
+                                              |___/                
+______________________________________________________________
+	The Dork Side of GOOGLE 1.2 
+		(C) 2014 mes3hacklab.org
 
-php dork.php [-s <shell>] [-st <tld>] [-n <numero>] [-q] [-h] [-nb]
-		[-nc] [-ng] [-r] [-sw] [--list-tld] [--list-shell]
-		[--site <sito>] [-u]
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it
+under certain conditions; Use -w for details.
+
+dork [-s <shell>] [-st <tld>] [-n <number>] [-q] [-h] [-nb] 
+	 [-nc] [-ng] [-r] [-sw] [--site <site>] [-u] [-w]
+	 [-b3 <charset>] [-b3n <number>] [-P <preset>]
+	 [-g <gen>] [-gn <number>] [-b3o]
+
+dork --list-tld [-q]
+dork --list-shell [-q]		
+dork --list-mys [-q]
+dork --list-pre [-q]
+dork --list-gen [-q]
 		
-	-s <shell>	Specifica la shell da cercare.
-	-st <tld>	Specifica la TLD.
-	--site <sito>	Specifica un sito internet.
-	-n <numero>	Numero di dork da generare.
-	-q		Stampa solo le dork.
-	-h		Questa guida.
-	-ng		Non aggiungere il proefisso gov alle TLD.
-	-sw		Scambia l'ordine delle parole chiave.
-	-r		Imposta tutto a caso.
-	-nb		Rendi le dork più generiche.
-	-nc		Non usare le ricerche secondarie specifiche.
-	--list-tld	Stampa la lista delle TLD.
-	--list-shell	Stampa la lista delle shell.
-	-u		Utilizza inurl invece che site nelle tld.
+	-s <shell>	Set the shell to search.
+	-st <tld>	Set the TLD to search.
+	--site <site>	Specify the website.
+	-n <number>	Set the number of dork to generate.
+	-q		Don't print the banner.
+	-h		Help.
+	-ng		Do not use shell-governmental 
+			organizations.
+	-sw		Shuffle the dorks.
+	-r		Sets everything to random.
+	-nb		Generic dorks.
+	-nc		Do not use secondary search keywords.
+	--list-tld	Print the list of TLDs.
+	--list-shell	Print the list of shells.
+	--list-mys	Print the list of charsets.
+	--list-pre	Print the list of presets.
+	--list-gen	Print the list of general words 
+			collections.
+	-g <gen>	Use general words collection.
+	-gn <num>	Nuumber of general words to use. 
+	-P <preset>	Use a preset dork parameters.
+	-u		Use inurl instead site in TLD search.
+	-b3 <charset>	Insert some characters (it may work
+			feeling lucky?).
+	-b3n <number>	Number of strange characters.
+	-b3o		Uuse strange characters as "or" operation.
+	-w		Show license.
 
+Available presets:	
+etnic               Search the etnic shells.
+all                 Search all
+apache              Increase search on apache.
+file                Increase search on binary files.
+
+Available shells:
+1n73ction
+r57shell
+c4uR
+CempLe
+Locus7Shell
+GNYShell
+merdeka
+santana
+CyberAnarchy
+HMBr57
+indonesian
+c99
+default
+
+Available charsets:
+336	latin
+2717	all
+144	greek
+256	ciryllic
+96	armenian
+112	herbew
+1085	arabic
+80	syriac
+128	bengali
+128	thai
+48	currency
+96	geometric
+208	japan
+
+Available word collections:
+headers             Search via file contents.
+apache              Search by configuration parameters.
+shells              Generic shells useful words.
+all                 All words!

@@ -19,12 +19,55 @@
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 
-$lst = file('dork.conf') OR die("Dork file error\n");
+function parsePar(&$par,$arg,&$pre,$isMain) {
+	$cx = count($arg);
+	for ($i = $isMain ? 1:0; $i < $cx; $i++) {
+		$p = $arg[$i];
+		if ($p=='' OR $p[0]!='-') die("Wrong parameter: $p\n");
+		$p = substr($p,1);
+		
+		if ($p=='P') {
+			$x=$arg[$i+1];
+			if ($x=='') die("Invalid value for -P\n");
+			if ($x[0]=='_' AND !$isMain) die("Can't use -P $x\n");
+			$i++;
+		        if (!isset($pre[$x])) die("Unknown preset: $x\n");
+		        if ($pre[$x][0]) die("Too many preset call: $x" .($isMain ? "":" by config file").".\n");
+		        $pre[$x][0]=true;
+		        parsePar($par,$pre[$x][1],$pre,false);
+		        continue;
+			}
+					
+		if (!isset($par[$p])) die("Wrong parameter: -$p\n");
+		
+		if (is_bool($par[$p])) {
+			$par[$p]=true;
+			continue;
+			}
+		
+		if (is_numeric($par[$p]) AND is_numeric(@$arg[$i+1])) {
+			$par[$p] = intval($arg[$i+1]);
+			$i++;
+			continue;
+			}
+			
+		if (is_string($par[$p])) {
+		        $par[$p] = $arg[$i+1];
+		        $i++;
+		        continue;
+			}
+			
+		die("Wrong parameter value -$p\n");
+		}
+}
+
+$lst = file('etc/dork.conf') OR die("Dork file error\n");
 $src=array();
 $ph=0;
 $idx = 0;
 $idc = 0;
 $shl=array();
+
 foreach($lst as $num => $li) {
 	list($li)=explode('#',$li,2);
 	$li=trim($li,"\r\n");
@@ -38,12 +81,12 @@ foreach($lst as $num => $li) {
 	        continue;
 		}
 		
-	if ($x=='' && $ph==1) {
+	if ($x=='' AND $ph==1) {
 	        $ph=0;
 	        $src[$idx] = array(
 	        	'a'	=>	$cur	,
 	        	'b'	=>	$tmp	,
-			'c'	=>	$tmp2	)
+				'c'	=>	$tmp2	)
 			;
 		$idc++;
 		$idx=$idc;			
@@ -64,10 +107,11 @@ foreach($lst as $num => $li) {
 	}
 	
 $tld=array();	
-$lst = file('tld.conf') OR die("TLD file error\n");
+$lst = file('etc/tld.conf') OR die("TLD file error\n");
 foreach($lst as $num => $li) {
 	$li=trim($li,"\t\r\n ");
 	$li=str_replace("\t",' ',$li);
+	list($li)=explode('#',$li,2);
 	if ($li=='') continue;
 	while(strpos($li,'  ')!==false) $li=str_replace('  ',' ',$li);
 	list($a,$b)=explode(' ',$li,2);
@@ -79,13 +123,89 @@ foreach($lst as $num => $li) {
 	        's'	=>	$b	)
 		;
 	}
+
+$tmp = file('etc/mysterious.conf') OR die("Error in mysterious.conf\n");
+$mys=array();
+$cur='all';
+foreach($tmp as $nn => $li) {
+		if ($nn==0) continue;
+		$li=trim($li,"\t\r\n ");
+		list($li)=explode('#',$li,2);
+		if ($li=='') continue;
+		if ($li[0]=='@') {
+			$cur=substr($li,1);
+			if (!isset($mys[$cur])) $mys[$cur] = array();
+			continue;
+			}
+		$x=ord($li[0]);
+		if ($x<127) continue;
+		$mys[$cur][] = $li;
+		$mys['all'][] = $li; 
+		}
+
+$tmp = file('etc/preset.conf') OR die("Error in preset.conf\n");
+$pre = array();
+
+foreach($tmp as $nn => $li) {
+	$li=trim($li,"\t\r\n ");
+	$li=str_replace("\t",' ',$li);
+	while(strpos($li,'  ')!==false) $li=str_replace('  ',' ',$li);
+	list($li,$cm)=@explode('#',$li,2);
+	$li=trim($li,' ');
+	if ($li=='') continue;
+	list($a,$b)=explode(' ',$li,2);
+	$a=strtolower($a);
+	if (isset($pre[$a])) $a=$a.count($pre);
+	$b=trim($b,' ');
+	$pre[$a] = array( 
+		false 		, 
+		explode(' ',$b)	,
+		trim($cm,' ')	)
+		;
+		
+	}
+
+$tmp = file('etc/keywords.conf') OR die("Error in keywords.conf\n");
+$kwo = array();
+foreach($tmp as $nn => $li) {
+	$li=trim($li,"\t\r\n ");
+	$li=str_replace("\t",' ',$li);
+	while(strpos($li,'  ')!==false) $li=str_replace('  ',' ',$li);
+	list($li,$cm)=@explode('#',$li,2);
+	$li=trim($li,' ');
+	if ($li=='') continue;
+	list($a,$b)=explode(' ',$li,2);
+	$a=strtolower($a);
+	if (isset($kwo[$a])) $a=$a.count($kwo);
+	$b = explode('|',$b);
+	$c=array();
+	foreach($b as $k => $v) {
+		$v=trim($v,' ');
+	        if ($v[0]!='$') {
+	        	$c[$k]=$v;
+	        	continue;
+			}
+		$v = substr($v,1);
+		if (!isset($kwo[$v])) die("Error in keywords.conf colleciton $v not defined before $a.\n");
+		$c = array_merge($c,$kwo[$v][0]);
+		}
 	
+	$kwo[$a] = array( 
+		$c		,
+		trim($cm,' ')	)
+		;
+		
+	}
+      
 $par = array(
 	's'		=>	""	,
 	'st'	=>	""	,
 	'n'		=>	1	,
-	'-list-tld'	=>	false,
-	'-list-shell'	=>	false,
+	'-list-tld'	=>	false	,
+	'-list-shell'	=>	false	,
+	'-list-mys'	=>	false	,
+	'-list-pre'	=>	false	,
+	'-list-gen'	=>	false	,
 	'-site'	=>	""	,
 	'q'		=>	false	,
 	'h'		=>	false	,
@@ -94,68 +214,89 @@ $par = array(
 	'ng'	=>	false	,
 	'r'		=>	false	,
 	'u'		=>	false	,
+	'w'		=>	false	,
+	'g'	=>	""		,
+	'gn'	=>	2		,
+	'b3'	=>	""		,
+	'b3n'	=>	3		,
+	'b3o'	=>	false		,
 	'sw'	=>	false	)
 	;
 	
-for ($i = 1; $i < $argc; $i++) {
-	$p = $argv[$i];
-	if ($p=='' OR $p[0]!='-') die("Parametro errato $p\n");
-	$p = substr($p,1);
-	if (!isset($par[$p])) die("Parametro errato -$p\n");
-	
-	if (is_bool($par[$p])) {
-		$par[$p]=true;
-		continue;
-		}
-	
-	if (is_numeric($par[$p]) AND is_numeric(@$argv[$i+1])) {
-		$par[$p] = intval($argv[$i+1]);
-		$i++;
-		continue;
-		}
-		
-	if (is_string($par[$p])) {
-	        $par[$p] = $argv[$i+1];
-	        $i++;
-	        continue;
-		}
-		
-	die("Tipo di parametro errato -$p\n");
-	}
+parsePar($par,$argv,$pre,true); 
 	
 if ($par['q']==false) {
-?>	
-______________________________________________________
-                 ____ __            __    __     __ 
-  __ _  ___ ___ |_  // /  ___ _____/ /__ / /__ _/ / 
- /  ' \/ -_|_-<_/_ </ _ \/ _ `/ __/  '_// / _ `/ _ \
-/_/_/_/\__/___/____/_//_/\_,_/\__/_/\_\/_/\_,_/_.__/
-______________________________________________________                                                    
-DorkSide of GOOLE 1.0 (C) 2014 mes3hacklab
+?>
+______________________________________________________________
+  _____ _               ___           _      __ _     _      
+ /__   \ |__   ___     /   \___  _ __| | __ / _(_) __| | ___ 
+   / /\/ '_ \ / _ \   / /\ / _ \| '__| |/ / \ \| |/ _` |/ _ \
+  / /  | | | |  __/  / /_// (_) | |  |   <  _\ \ | (_| |  __/
+  \/   |_|_|_|\___| /___,' \___/|_|  |_|\_\ \__/_|\__,_|\___|
+                  ___  / _|   / _ \___   ___   __ _| | ___ 
+                 / _ \| |_   / /_\/ _ \ / _ \ / _` | |/ _ \
+                | (_) |  _| / /_\\ (_) | (_) | (_| | |  __/
+                 \___/|_|   \____/\___/ \___/ \__, |_|\___|
+                                              |___/                
+______________________________________________________________
+	The Dork Side of GOOGLE 1.2 
+		(C) 2014 mes3hacklab.org
 
-<?php }
+<?php
+if (!$par['w']) {
+	echo "This program comes with ABSOLUTELY NO WARRANTY.\n";
+	echo "This is free software, and you are welcome to redistribute it\n";
+	echo "under certain conditions; Use -w for details.\n\n";
+	}
+}
+
+if ($par['w']) {
+	echo "License:\n";
+	@readfile('COPYRIGHT') OR @readfile('etc/COPYRIGHT') OR die("GPL V3\n");
+	exit;
+	}
 
 if ($par['h']) {
 ?>
-php dork.php [-s <shell>] [-st <tld>] [-n <numero>] [-q] [-h] [-nb]
-		[-nc] [-ng] [-r] [-sw] [--list-tld] [--list-shell]
-		[--site <sito>] [-u]
-		
-	-s <shell>	Specifica la shell da cercare.
-	-st <tld>	Specifica la TLD.
-	--site <sito>	Specifica un sito internet.
-	-n <numero>	Numero di dork da generare.
-	-q		Stampa solo le dork.
-	-h		Questa guida.
-	-ng		Non aggiungere il proefisso gov alle TLD.
-	-sw		Scambia l'ordine delle parole chiave.
-	-r		Imposta tutto a caso.
-	-nb		Rendi le dork più generiche.
-	-nc		Non usare le ricerche secondarie specifiche.
-	--list-tld	Stampa la lista delle TLD.
-	--list-shell	Stampa la lista delle shell.
-	-u		Utilizza inurl invece che site nelle tld.
+dork [-s <shell>] [-st <tld>] [-n <number>] [-q] [-h] [-nb] 
+	 [-nc] [-ng] [-r] [-sw] [--site <site>] [-u] [-w]
+	 [-b3 <charset>] [-b3n <number>] [-P <preset>]
+	 [-g <gen>] [-gn <number>] [-b3o]
 
+dork --list-tld [-q]
+dork --list-shell [-q]		
+dork --list-mys [-q]
+dork --list-pre [-q]
+dork --list-gen [-q]
+		
+	-s <shell>	Set the shell to search.
+	-st <tld>	Set the TLD to search.
+	--site <site>	Specify the website.
+	-n <number>	Set the number of dork to generate.
+	-q		Don't print the banner.
+	-h		Help.
+	-ng		Do not use shell-governmental 
+			organizations.
+	-sw		Shuffle the dorks.
+	-r		Sets everything to random.
+	-nb		Generic dorks.
+	-nc		Do not use secondary search keywords.
+	--list-tld	Print the list of TLDs.
+	--list-shell	Print the list of shells.
+	--list-mys	Print the list of charsets.
+	--list-pre	Print the list of presets.
+	--list-gen	Print the list of general words 
+			collections.
+	-g <gen>	Use general words collection.
+	-gn <num>	Nuumber of general words to use. 
+	-P <preset>	Use a preset dork parameters.
+	-u		Use inurl instead site in TLD search.
+	-b3 <charset>	Insert some characters (it may work
+			feeling lucky?).
+	-b3n <number>	Number of strange characters.
+	-b3o		Uuse strange characters as "or" operation.
+	-w		Show license.
+	
 <?php
 	exit;
 	}	
@@ -165,8 +306,31 @@ if ($par['-list-tld']) {
 	exit;
 	}
 
+if ($par['-list-mys']) {
+	foreach($mys as $k => $v) echo count($v)."\t$k\n";
+	exit;
+	}
+
 if ($par['-list-shell']) {
 	foreach($shl as $k => $v) echo "$k\n";
+	exit;
+	}
+
+if ($par['-list-pre']) {
+	foreach($pre as $k => $v) {
+	        echo str_pad($k,19,' ').' ';
+	        $x = wordwrap($v[2],50,"\n\t");
+	        echo trim($x,"\n\t ")."\n";
+		}
+	exit;
+	}
+
+if ($par['-list-gen']) {
+	foreach($kwo as $k => $v) {
+	        echo str_pad($k,19,' ').' ';
+	        $x = wordwrap($v[1],50,"\n\t");
+	        echo trim($x,"\n\t ")."\n";
+		}
 	exit;
 	}
 
@@ -182,7 +346,7 @@ if ($par['s']!='') {
 		}
 	$src=$tmp;
 	$tmp='';
-	if (count($src)==0) die("Shell senza dork {$par['s']}\n");
+	if (count($src)==0) die("Shell without dork {$par['s']}\n");
 	}
 
 $tmp = array();
@@ -198,11 +362,23 @@ $FF= array(
 
 @mt_srand(microtime(true));
 
+$eso=false;
+if ($par['b3']!="") {
+		if (!isset($mys[$par['b3']])) die("Unknown esoteric function!!\n");
+		$eso = $mys[$par['b3']];
+		}
+
+$ugw=false;
+if ($par['g']!="") {
+        if (!isset($kwo[$par['g']])) die("Unknown words collection function!!\n");
+	$ugw = $kwo[$par['g']][0];
+	}
+			   
 $pr0 = $par['u'] ? "site:" : "inurl:" ;
 
 for ($don=0;$don<$par['n'];$don++) {
 	if ($par['st']!='' AND $par['-site']=='') {
-        	if (!isset($tld[$par['st']])) die("TLD Sconosciuta: {$par['st']}\n");
+        	if (!isset($tld[$par['st']])) die("Unknown TLD: {$par['st']}\n");
         	if ($par['ng']) $st=$pr0.$par['st'].' '; else $st=$pr0.$tld[$par['st']]['t'].' ';
         	} else $st='';
         
@@ -228,12 +404,49 @@ for ($don=0;$don<$par['n'];$don++) {
 			$st.=$cur[$i][$s].' ';
 			}
 		}				
+
+	if ($ugw) {
+		shuffle($ugw);
+		$m = count($ugw)-1;
+		if ($par['gn']<2) $par['gn']=2;
+		if ($par['gn']>$m) $par['gn']=$m;
+		
+		$x=array();
+		$a=0;
+		
+		foreach($ugw as $y) {
+			$x[] = $y;
+			if ($a>=$par['gn']) break;
+			$a++;
+			}
+			
+		$x='( '.implode(' | ',$x).' ) ';
+		$x=str_replace(' ',chr(255),$x);
+		$st.=$x;
+		$x='';				
+		}
+
+	if ($eso) {
+		if ($par['b3o']) {
+			$x=array();
+			$m = count($eso);
+			for ($a=0;$a<$par['b3n'];$a++) $x[]=chr(255).$eso[mt_rand(0,$m-1)].chr(255);
+			$st.='('.chr(255).implode(chr(255).'|'.chr(255),$x).chr(255).')'.chr(255).' ';			
+			} else {
+			$m = count($eso);
+			for ($a=0;$a<$par['b3n'];$a++) {
+				$st.=chr(255).$eso[mt_rand(0,$m-1)].chr(255).' ';
+				}
+			}
+		}
+
 	$st=trim($st,' ');
 	if ($par['sw']) {
 	        $st=explode(' ',$st);
 	        shuffle($st);
 	        $st=implode(' ',$st);
 		}
+	$st=str_replace(chr(255),' ',$st);
 	echo "$st\n";	       
 	}
 	
