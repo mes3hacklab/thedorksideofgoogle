@@ -289,16 +289,15 @@ dork --list-gen [-q]
 	--list-shell	Print the list of shells.
 	--list-mys	Print the list of charsets.
 	--list-pre	Print the list of presets.
-	--list-gen	Print the list of general words 
-			collections.
-	-g <gen>	Use general words collection.
-	-gn <num>	Nuumber of general words to use. 
-	-P <preset>	Use a preset dork parameters.
+	--list-gen	Print the list of universal words.
+	-g <gen>	Use the universal words.
+	-gn <num>	Number of universal words to use. 
+	-P <preset>	Use preset dork parameters.
 	-u		Use inurl instead site in TLD search.
-	-b3 <charset>	Insert some characters (it may work
+	-b3 <charset>	Insert some characters (it may work,
 			feeling lucky?).
 	-b3n <number>	Number of strange characters.
-	-b3o		Uuse strange characters as "or" operation.
+	-b3o		Use "or" between character and character.
 	-w		Show license.
 	
 <?php
